@@ -63,9 +63,9 @@ class FormBase_Model
 		if( empty( $field_rules) )
 			return true;
 
-        static::$validation = Validator::make( $input, $field_rules );
+		static::$validation = Validator::make( $input, $field_rules );
 
-        return static::$validation->passes();
+		return static::$validation->passes();
 
 	}
 

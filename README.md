@@ -34,13 +34,3 @@ This form base-model is currently in development. It is very likely that this cl
 
 **Example controller usage:**
 
-	Route::get('user/(:num)', function($id)
-	{
-		$user = DB::table('users')->find($id);
-
-		return View::make('profile')->with('user', $user);
-	});
-
-**Redirecting & Flashing Data To The Session:**
-
-	return Redirect::to('profile')->with('message', 'Welcome Back!');

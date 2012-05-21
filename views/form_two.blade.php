@@ -8,6 +8,6 @@
 		Suite / Apt #: {{ Form::text( 'suite_number', Input::old( 'suite_number' ) ) }}
 	</p>
 
-	{{ Form::submit( 'Save' ) }}
-	
+	{{ Form::submit( 'Review' ) }}
+	{{ HTML::link( 'form_example', 'Previous' ) }}
 {{ Form::close() }}

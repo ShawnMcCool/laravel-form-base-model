@@ -1,13 +1,11 @@
 <h2>Review</h2>
 
-@if( ExampleForm::has( 'first_name' ) )
-	<p>
-		First Name: {{ ExampleForm::get( 'first_name' ) }}
-	</p>
-@endif
+<p>
+	First Name: {{ ExampleForm::get( 'first_name', 'none entered' ) }}
+</p>
 
-@if( ExampleForm::has( 'last_name' ) )
-	<p>
-		Last Name: {{ ExampleForm::get( 'last_name' ) }}
-	</p>
-@endif
+<p>
+	Last Name: {{ ExampleForm::get( 'last_name', 'none entered' ) }}
+</p>
+
+{{ HTML::link( 'form_example', 'Make Changes' ) }}

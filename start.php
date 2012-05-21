@@ -24,7 +24,9 @@ Route::get( 'form_example', function()
 Route::post( 'form_example', function()
 {
 
-	$fields = array( 'first_name', 'last_name' );
+	$fields = array( 'first_name', 'last_name', 'status' );
+
+	ExampleForm::load_input();
 
 	if( ExampleForm::is_valid( $fields ) )
 	{

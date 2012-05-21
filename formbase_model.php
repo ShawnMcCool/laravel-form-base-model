@@ -111,7 +111,7 @@ class FormBase_Model
 		if( is_null( $input ) )
 			$input = Input::all();
 
-		if( Input::old() && is_null( static::$input ) )
+		if( empty( static::$field_data ) )
 			static::load_input();
 
 		foreach( $fields as $field_name )
@@ -124,6 +124,8 @@ class FormBase_Model
 		}
 
 		static::serialize_to_session();
+
+		Session::forget( Input::old_input );
 
 	}
 
@@ -142,12 +144,10 @@ class FormBase_Model
 
 		static::unserialize_from_session();
 
-		if( Input::old() )
-			Session::forget( Input::old_input );
-		else
-			Session::put( Input::old_input, static::$field_data );
-
-		static::$input = (object) static::$field_data;
+		if( !Input::old() )
+		{
+			Session::flash( Input::old_input, static::$field_data );
+		}
 
 	}
 
@@ -197,4 +197,12 @@ class FormBase_Model
 		return static::has( $field_name ) ? static::$field_data[$field_name] : $default;
 
 	}
+
+	public static function all()
+	{
+
+		return static::$field_data;
+
+	}
+
 }

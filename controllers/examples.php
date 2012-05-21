@@ -51,14 +51,12 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 		$fields = array( 'first_name', 'last_name', 'status' );
 
-		// ExampleForm::load_input();
-
 		if( ExampleForm::is_valid( $fields ) )
 		{
 			
 			ExampleForm::store_input( $fields );
 			
-			return Redirect::to( 'multi_page_example_two' );
+			return Redirect::to_route( 'form_examples', array( 'multi_page_example_two' ) );
 
 		}
 		else
@@ -80,14 +78,14 @@ class Form_Base_Model_Examples_Controller extends Controller
 	public function post_multi_page_example_two()
 	{
 		
-		$fields = array( 'street_address', 'suite_number' );
+		$fields = array( 'street_address', 'suite_number', 'favorite_foods' );
 
 		if( ExampleForm::is_valid( $fields ) )
 		{
 			
 			ExampleForm::store_input( $fields );
 			
-			return Redirect::to( 'form_example_page_review' );
+			return Redirect::to_route( 'form_examples', array( 'multi_page_example_review' ) );
 
 		}
 		else
@@ -99,10 +97,20 @@ class Form_Base_Model_Examples_Controller extends Controller
 	{
 
 		// load form data (so that the page will be populated)
+
 		ExampleForm::load_input();
 
 		return View::make( 'form-base-model::multi_page_example_review' );
 
 	}
-	
+
+	public function get_clear_data()
+	{
+
+		ExampleForm::clear_input();
+
+		return Redirect::to_route( 'form_examples', array( 'index' ) );
+
+	}	
+
 }

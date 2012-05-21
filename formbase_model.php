@@ -203,7 +203,7 @@ class FormBase_Model
 	/**
 	 * Empty persistent form field_data.
 	 */
-	protected function reset_input()
+	public static function clear_input()
 	{
 
 		// remove the persistent form data FOR-EV-ER, FOR-EV-ER, FOR..
@@ -223,7 +223,7 @@ class FormBase_Model
 	public static function has( $field_name )
 	{
 		
-		return isset( static::$field_data[$field_name] );
+		return isset( static::$field_data[$field_name] ) && !empty( static::$field_data[$field_name] );
 
 	}
 

@@ -16,4 +16,13 @@ class ExampleForm extends FormBase_Model
 		4  => 'Boring',
 		5  => 'Adventurer',
 	);
+
+	public static $foods = array(
+		1 => 'Tacos',
+		2 => 'Chicken Tacos',
+		3 => 'Beef Tacos',
+		4 => 'Vegetarian Tacos',
+		5 => 'Black Bean Nachos',
+	);
+
 }

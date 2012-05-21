@@ -144,7 +144,7 @@ class FormBase_Model
 		// overwrite them
 
 		if( empty( static::$field_data ) )
-			static::load_input();
+			static::unserialize_from_session();
 
 		// ideally we'll have either a value for a field or an empty value
 		// for a field. this isn't strictly necessary and may change in the
@@ -163,40 +163,6 @@ class FormBase_Model
 		// session variable to prevent potential weirdness
 
 		static::serialize_to_session();
-
-		Session::forget( Input::old_input );
-
-	}
-
-	/**
-	 * Loads input from session and detects if the form was redirected
-	 * back to the same page so that it can repopulate Input::old()
-	 * fields from the field_data array.
-	 *
-	 * <code>
-	 *		// prepare form population
-	 *		ExampleForm::load_input();
-	 * </code>
-	 */
-	public static function load_input()
-	{
-
-		// load the field_data from the session
-
-		static::unserialize_from_session();
-
-		// if there is no flashed input data we can load it from our
-		// persistent field data. this allows our forms to be populated
-		// even when we haven't redirected with flash data. this 
-		// enables us to use the standard Input::old() conventions in
-		// our form, rather than using some new form methods for 
-		// population. it's possible that this will change in future
-		// versions
-
-		if( !Input::old() )
-		{
-			Session::flash( Input::old_input, static::$field_data );
-		}
 
 	}
 
@@ -245,6 +211,11 @@ class FormBase_Model
 	public static function get( $field_name, $default = null )
 	{
 
+		// prevent need to manually load input when populating forms
+
+		if( empty( static::$field_data ) )
+			static::unserialize_from_session();
+		
 		return static::has( $field_name ) ? static::$field_data[$field_name] : $default;
 
 	}
@@ -258,6 +229,20 @@ class FormBase_Model
 	{
 
 		return static::$field_data;
+
+	}
+
+	public static function populate( $field_name, $default = null )
+	{
+
+		// prevent need to manually load input when populating forms
+
+		if( empty( static::$field_data ) )
+			static::unserialize_from_session();
+
+		// return input flash data, fallback on persistent for data, fallback on default
+
+		return Input::old( $field_name, static::get( $field_name, $default ) );
 
 	}
 

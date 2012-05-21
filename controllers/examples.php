@@ -34,12 +34,6 @@ class Form_Base_Model_Examples_Controller extends Controller
 	public function get_multi_page_example_one()
 	{
 
-		// load form data (so that the form will be populated)
-
-		ExampleForm::load_input();
-
-		// display the form
-
 		return View::make( 'form-base-model::multi_page_example_one' );
 
 	}
@@ -67,10 +61,6 @@ class Form_Base_Model_Examples_Controller extends Controller
 	public function get_multi_page_example_two()
 	{
 
-		// load form data (so that the form will be populated)
-
-		ExampleForm::load_input();
-
 		return View::make( 'form-base-model::multi_page_example_two' );
 
 	}
@@ -95,10 +85,6 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 	public function get_multi_page_example_review()
 	{
-
-		// load form data (so that the page will be populated)
-
-		ExampleForm::load_input();
 
 		return View::make( 'form-base-model::multi_page_example_review' );
 

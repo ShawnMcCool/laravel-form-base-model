@@ -1,17 +1,17 @@
 {{ Form::open() }}
 
 	<p>
-		First Name: {{ Form::text( 'first_name', Input::old( 'first_name' ) ) }}
+		First Name: {{ Form::text( 'first_name', ExampleForm::populate( 'first_name' ) ) }}
 		{{ $errors->has( 'first_name' ) ? $errors->first( 'first_name' ) : '' }}
 	</p>
 
 	<p>
-		Last Name: {{ Form::text( 'last_name', Input::old( 'last_name' ) ) }}
+		Last Name: {{ Form::text( 'last_name', ExampleForm::populate( 'last_name' ) ) }}
 		{{ $errors->has( 'last_name' ) ? $errors->first( 'last_name' ) : '' }}
 	</p>
 
 	<p>
-		Status: {{ Form::select( 'status', ExampleForm::$status, Input::old( 'status' ) ) }}
+		Status: {{ Form::select( 'status', ExampleForm::$status, ExampleForm::populate( 'status' ) ) }}
 		{{ $errors->has( 'status' ) ? $errors->first( 'status' ) : '' }}
 	</p>
 

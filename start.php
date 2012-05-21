@@ -14,6 +14,7 @@ Autoloader::map(array(
 ));
 
 Route::any( 'form_examples/(:any?)/(:any?)/(:any?)/(:any?)/(:any?)', array(
+	'as'       => 'form_examples',
 	'uses'     => 'form-base-model::examples@(:1)',
 	'defaults' => array( 'index' ),
 ));

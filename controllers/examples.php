@@ -7,10 +7,31 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 	public function get_index()
 	{
-		die('cat');
+
+		return View::make( 'form-base-model::index' );
+
 	}
 
-	public function get_example_one_page_one()
+	// simple form example
+
+	public function get_simple_example()
+	{
+
+	}
+
+	public function post_simple_example()
+	{
+
+	}
+
+	public function get_simple_example_review()
+	{
+
+	}
+
+	// multiple page form example
+
+	public function get_multi_page_example_one()
 	{
 
 		// load form data (so that the form will be populated)
@@ -19,11 +40,11 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 		// display the form
 
-		return View::make( 'form-base-model::example_one_page_one' );
+		return View::make( 'form-base-model::multi_page_example_one' );
 
 	}
 
-	public function post_example_one_page_one()
+	public function post_multi_page_example_one()
 	{
 
 		// define which fields this request will validate and store
@@ -37,7 +58,7 @@ class Form_Base_Model_Examples_Controller extends Controller
 			
 			ExampleForm::store_input( $fields );
 			
-			return Redirect::to( 'form_example_page_two' );
+			return Redirect::to( 'multi_page_example_two' );
 
 		}
 		else
@@ -45,18 +66,18 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 	}
 	
-	public function get_example_one_page_two()
+	public function get_multi_page_example_two()
 	{
 
 		// load form data (so that the form will be populated)
 
 		ExampleForm::load_input();
 
-		return View::make( 'form-base-model::example_one_page_two' );
+		return View::make( 'form-base-model::multi_page_example_two' );
 
 	}
 
-	public function post_example_one_page_two()
+	public function post_multi_page_example_two()
 	{
 		
 		$fields = array( 'street_address', 'suite_number' );
@@ -74,13 +95,13 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 	}
 
-	public function get_example_one_review()
+	public function get_multi_page_example_review()
 	{
 
 		// load form data (so that the page will be populated)
 		ExampleForm::load_input();
 
-		return View::make( 'form-base-model::form_review' );
+		return View::make( 'form-base-model::multi_page_example_review' );
 
 	}
 	

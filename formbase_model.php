@@ -45,23 +45,46 @@ class FormBase_Model
 	 * @param  array   $input
 	 * @return bool
 	 */
-	public static function is_valid( $fields, $input = null )
+	public static function is_valid( $fields = null, $input = null )
 	{
 
-		if( !is_array( $fields ) )
+		// $fields must be an array or null, a null value represents
+		// that all fields should be validated
+
+		if( !is_array( $fields ) && !is_null( $fields ) )
 			return false;
+
+		// if input is null then pull all input from the input class
 
 		if( is_null( $input ) )
 			$input = Input::all();
 
-		$field_rules = array();
+		// if $fields is an array then we need to walk through the
+		// rules defined in the form model and pull out any that
+		// apply to the fields that were defined
 
-		foreach( $fields as $field_name )
-			if( array_key_exists( $field_name, static::$rules ) )
-				$field_rules[$field_name] = static::$rules[$field_name];
+		// if $fields isn't an array then apply all rules
+
+		if( is_array( $fields ) )
+		{
+			
+			$field_rules = array();
+
+			foreach( $fields as $field_name )
+				if( array_key_exists( $field_name, static::$rules ) )
+					$field_rules[$field_name] = static::$rules[$field_name];
+
+		}
+		else
+			$field_rules = static::$rules[$field_name];
+
+		// if no rules apply to the fields that we're validating then
+		// validation passes
 
 		if( empty( $field_rules) )
 			return true;
+
+		// generate the validator and return its success status
 
 		static::$validation = Validator::make( $input, $field_rules );
 
@@ -74,7 +97,7 @@ class FormBase_Model
 	 */
 	private static function serialize_to_session()
 	{
-		
+
 		Session::put( 'serialized_field_data[' .get_called_class(). ']', serialize( static::$field_data ) );
 
 	}
@@ -105,14 +128,27 @@ class FormBase_Model
 	public static function store_input( $fields, $input = null )
 	{
 
+		// $fields must be an array
+
 		if( !is_array( $fields ) )
 			return false;
+
+		// by default we store all input, this can be overridden by passing
+		// a second parameter to the store_input() method
 
 		if( is_null( $input ) )
 			$input = Input::all();
 
+		// when storing input it's important to load the persistent form 
+		// data that may exist from previous requests, otherwise we will
+		// overwrite them
+
 		if( empty( static::$field_data ) )
 			static::load_input();
+
+		// ideally we'll have either a value for a field or an empty value
+		// for a field. this isn't strictly necessary and may change in the
+		// future given an appropriately convincing argument
 
 		foreach( $fields as $field_name )
 		{
@@ -122,6 +158,9 @@ class FormBase_Model
 				static::$field_data[$field_name] = '';
 
 		}
+
+		// serialize the field data to session and dump the old_input 
+		// session variable to prevent potential weirdness
 
 		static::serialize_to_session();
 
@@ -142,7 +181,17 @@ class FormBase_Model
 	public static function load_input()
 	{
 
+		// load the field_data from the session
+
 		static::unserialize_from_session();
+
+		// if there is no flashed input data we can load it from our
+		// persistent field data. this allows our forms to be populated
+		// even when we haven't redirected with flash data. this 
+		// enables us to use the standard Input::old() conventions in
+		// our form, rather than using some new form methods for 
+		// population. it's possible that this will change in future
+		// versions
 
 		if( !Input::old() )
 		{
@@ -157,6 +206,8 @@ class FormBase_Model
 	protected function reset_input()
 	{
 
+		// remove the persistent form data FOR-EV-ER, FOR-EV-ER, FOR..
+		
 		Session::forget( 'serialized_field_data[' .get_called_class(). ']' );
 
 	}

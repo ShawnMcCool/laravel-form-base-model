@@ -198,6 +198,11 @@ class FormBase_Model
 
 	}
 
+	/**
+	 * Get all of the persistent form data.
+	 *
+	 * @return array
+	 */
 	public static function all()
 	{
 

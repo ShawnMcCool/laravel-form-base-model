@@ -167,6 +167,8 @@ The get() method returns the data for the requested form field and supports and 
 
 	ExampleForm::get( 'status', 'none entered' );
 
+**Note:** It's important to point out that get() relies on data saved with save_input(). If you aren't using the persistent data just use Input::get();
+
 The all() method returns an array of all field data.
 
 	ExampleForm::all();

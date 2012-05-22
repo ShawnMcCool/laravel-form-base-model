@@ -1,6 +1,6 @@
 ## A Form Base-Model for Laravel
 
-Forms are often used to interact with a specific model such as a user or a blog post. However, in many circumstances a form may collect data that is related to multiple data models. Forms may also have special validation requirements that have little to do with the underlying data, such as captcha. Consequently, it often makes sense to create a form model.
+Forms are often used to interact with a specific model such as a user or a blog post. However, in many circumstances a form may collect data that is related to multiple data models. Consequently, may also have special validation requirements that have little to do with the underlying data, such as captcha and password confirmation. Consequently, it often makes sense to create a form model. A form model represents the data needs of a form. This may be validation alone, storing values for form select drop-downs, having custom methods to generate data for the form, or managing persistent data in a session to make multi-page forms simple.
 
 This form base-model is currently in development. It is very likely that this class will be continuously refactored over time to support more use-cases. This project is open for community participation so please feel free to submit issues and/or pull-requests.
 

@@ -72,10 +72,10 @@ Then, update your bundles.php to auto-start the bundle.
 	public function post_simple_example()
 	{
 
-		if( ExampleForm::is_valid( $fields ) )
+		if( ExampleForm::is_valid() )
 		{
 			
-			ExampleForm::save_input( $fields );
+			ExampleForm::save_input();
 			
 			return Redirect::to_route( 'form_examples', array( 'simple_example_review' ) );
 

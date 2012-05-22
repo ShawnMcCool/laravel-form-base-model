@@ -177,6 +177,8 @@ To clear persistent data from a form model just tell it to forget the input.
 	
 **Saving form data to Eloquent model**
 
+When it's time to save the data from your form to your database just access the form the same way you'd access data using Laravel's Input class. 
+
 	$user = new User;
 	
 	$user->first_name = ExampleForm::get( 'first_name' );

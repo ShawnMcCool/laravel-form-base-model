@@ -74,7 +74,7 @@ This form base-model is currently in development. It is very likely that this cl
 	{
 
 		// clear any lingering persistent data as we generate a new form instance
-		
+
 		ExampleForm::forget_input();
 
 		return Redirect::to_route( 'form_examples', array( 'multi_page_example_one' ) );
@@ -155,3 +155,7 @@ The get() method returns the data for the requested form field and supports and 
 The all() method returns an array of all field data.
 
 	ExampleForm::all();
+
+To clear persistent data from a form model just tell it to forget the input.
+
+	ExampleForm::forget_input();

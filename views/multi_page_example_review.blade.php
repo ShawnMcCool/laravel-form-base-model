@@ -19,6 +19,10 @@
 @endif
 
 <p>
+	Status: {{ ExampleForm::has( 'status' ) ? ExampleForm::$status[ExampleForm::get( 'status' )] : 'none selected' }}
+</p>
+
+<p>
 	Favorite Foods:
 	
 	<? $foods = ExampleForm::populate( 'favorite_foods', array() ); // workaround for blade forelse bug that i only just now found ?>

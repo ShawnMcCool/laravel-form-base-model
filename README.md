@@ -41,7 +41,7 @@ This form base-model is currently in development. It is very likely that this cl
 
 	}
 
-**Example controller usage:**
+**Simple example controller usage:**
 
 	// simple form example
 
@@ -55,10 +55,6 @@ This form base-model is currently in development. It is very likely that this cl
 	public function post_simple_example()
 	{
 
-		// define which fields this request will validate and save
-
-		$fields = array( 'first_name', 'last_name', 'status' );
-
 		if( ExampleForm::is_valid( $fields ) )
 		{
 			
@@ -71,6 +67,78 @@ This form base-model is currently in development. It is very likely that this cl
 			return Redirect::back()->with_input()->with_errors( ExampleForm::$validation );
 
 	}
+
+**Multi-page form example controller usage:**
+
+	public function get_multi_page_example()
+	{
+
+		// clear any lingering persistent data as we generate a new form instance
+		
+		ExampleForm::forget_input();
+
+		return Redirect::to_route( 'form_examples', array( 'multi_page_example_one' ) );
+
+	}
+
+	public function get_multi_page_example_one()
+	{
+
+		return View::make( 'form-base-model::multi_page_example_one' );
+
+	}
+
+	public function post_multi_page_example_one()
+	{
+
+		// define which fields this request will validate and save
+
+		$fields = array( 'first_name', 'last_name', 'status' );
+
+		// validate form and redirect with errors on failure
+
+		if( ExampleForm::is_valid( $fields ) )
+		{
+		
+			// save input to session
+
+			ExampleForm::save_input( $fields );
+			
+			// redirect to the next page
+
+			return Redirect::to_route( 'form_examples', array( 'multi_page_example_two' ) );
+
+		}
+		else
+			return Redirect::back()->with_input()->with_errors( ExampleForm::$validation );
+
+	}
+	
+	public function get_multi_page_example_two()
+	{
+
+		return View::make( 'form-base-model::multi_page_example_two' );
+
+	}
+
+	public function post_multi_page_example_two()
+	{
+		
+		$fields = array( 'street_address', 'suite_number', 'favorite_foods' );
+
+		if( ExampleForm::is_valid( $fields ) )
+		{
+			
+			ExampleForm::save_input( $fields );
+			
+			return Redirect::to_route( 'form_examples', array( 'multi_page_example_review' ) );
+
+		}
+		else
+			return Redirect::back()->with_input()->with_errors( ExampleForm::$validation );
+
+	}
+
 
 **Populating form views:**
 

@@ -8,6 +8,7 @@ This form base-model is currently in development. It is very likely that this cl
 
 - Form validation mechanism.
 - Persistent form-data management for multi-page forms.
+- Simple form field re-population.
 - Interface for accessing persistent form-data.
 
 ### Installation

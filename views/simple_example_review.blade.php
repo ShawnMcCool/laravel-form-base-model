@@ -9,7 +9,7 @@
 </p>
 
 <p>
-	Status: {{ ExampleForm::get( 'status', 'none entered' ) }}
+	Status: {{ ExampleForm::has( 'status' ) ? ExampleForm::$status[ExampleForm::get( 'status' )] : 'none selected' }}
 </p>
 
 

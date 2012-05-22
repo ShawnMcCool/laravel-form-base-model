@@ -26,12 +26,10 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 		// define which fields this request will validate and save
 
-		$fields = array( 'first_name', 'last_name', 'status' );
-
-		if( ExampleForm::is_valid( $fields ) )
+		if( ExampleForm::is_valid() )
 		{
 			
-			ExampleForm::save_input( $fields );
+			ExampleForm::save_input();
 			
 			return Redirect::to_route( 'form_examples', array( 'simple_example_review' ) );
 

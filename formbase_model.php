@@ -76,7 +76,7 @@ class FormBase_Model
 
 		}
 		else
-			$field_rules = static::$rules[$field_name];
+			$field_rules = static::$rules;
 
 		// if no rules apply to the fields that we're validating then
 		// validation passes
@@ -129,13 +129,18 @@ class FormBase_Model
 	 * @param  array   $fields
 	 * @param  array   $input
 	 */
-	public static function save_input( $fields, $input = null )
+	public static function save_input( $fields = null, $input = null )
 	{
 
 		// $fields must be an array
 
-		if( !is_array( $fields ) )
+		if( !is_array( $fields ) && !is_null( $fields) )
 			return false;
+
+		// by default we save all fields
+
+		if( is_null( $fields ) )
+			$fields = array_keys( Input::all() );
 
 		// by default we save all input, this can be overridden by passing
 		// a second parameter to the save_input() method

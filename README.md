@@ -10,6 +10,22 @@ This form base-model is currently in development. It is very likely that this cl
 - Persistent form-data management for multi-page forms.
 - Interface for accessing persistent form-data.
 
+### Installation
+
+Install with artisan
+
+	php artisan bundle:install form-base-model
+
+or, clone the project into **bundles/form-base-model**.
+
+Then, update your bundles.php to auto-start the bundle.
+
+	return array(
+		'form-base-model' => array( 'auto' => true ),
+	);
+
+**Notice:** The form-base-model bundle comes with examples that will auto-route to http://yoursite/form_examples. Remember to remove this from bundles/form-base-model/start.php when you're finished with the examples.
+
 ### Examples
 
 **Example form model:**

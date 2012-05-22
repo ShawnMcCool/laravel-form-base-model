@@ -114,18 +114,20 @@ class FormBase_Model
 	}
 
 	/**
-	 * Retrieves input and stores it in the model's field_data array.
+	 * Retrieves input, stores it in the model's field_data array,
+	 * and serializes the array to the session.
+	 * 
 	 * Only the fields declared in the $field array will be stored.
 	 *
 	 * <code>
-	 *		// Store form input data
-	 *		ExampleForm::store_input( array( 'first_name', 'last_name' ) );
+	 *		// save form input data
+	 *		ExampleForm::save_input( array( 'first_name', 'last_name' ) );
 	 * </code>
 	 *
 	 * @param  array   $fields
 	 * @param  array   $input
 	 */
-	public static function store_input( $fields, $input = null )
+	public static function save_input( $fields, $input = null )
 	{
 
 		// $fields must be an array
@@ -133,8 +135,8 @@ class FormBase_Model
 		if( !is_array( $fields ) )
 			return false;
 
-		// by default we store all input, this can be overridden by passing
-		// a second parameter to the store_input() method
+		// by default we save all input, this can be overridden by passing
+		// a second parameter to the save_input() method
 
 		if( is_null( $input ) )
 			$input = Input::all();
@@ -159,8 +161,7 @@ class FormBase_Model
 
 		}
 
-		// serialize the field data to session and dump the old_input 
-		// session variable to prevent potential weirdness
+		// serialize the field data to session
 
 		static::serialize_to_session();
 
@@ -169,7 +170,7 @@ class FormBase_Model
 	/**
 	 * Empty persistent form field_data.
 	 */
-	public static function clear_input()
+	public static function forget_input()
 	{
 
 		// remove the persistent form data FOR-EV-ER, FOR-EV-ER, FOR..
@@ -215,7 +216,7 @@ class FormBase_Model
 
 		if( empty( static::$field_data ) )
 			static::unserialize_from_session();
-		
+
 		return static::has( $field_name ) ? static::$field_data[$field_name] : $default;
 
 	}
@@ -232,6 +233,22 @@ class FormBase_Model
 
 	}
 
+	/**
+	 * Use to populate a form field. Loads the field's value from 
+	 * flashed input data, if that's not present it loads the value
+	 *
+	 * <code>
+	 *		// Get the "email" item from the form's field data array
+	 *		$email = ExampleForm::get( 'email' );
+	 *
+	 *		// Return a default value if the specified item doesn't exist
+	 *		$email = ExampleForm::get( 'email', 'not listed' );
+	 * </code>
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $default
+	 * @return mixed
+	 */
 	public static function populate( $field_name, $default = null )
 	{
 

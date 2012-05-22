@@ -31,4 +31,4 @@
 
 </p>
 
-{{ HTML::link_to_route( 'form_examples', 'Make Changes', array( 'multi_page_example_one' ) ) }} {{ HTML::link_to_route( 'form_examples', 'Clear and Start Over', array( 'clear_data' ) ) }}
+{{ HTML::link_to_route( 'form_examples', 'Make Changes', array( 'multi_page_example_one' ) ) }} {{ HTML::link_to_route( 'form_examples', 'Return to Examples Page', array( 'index' ) ) }}

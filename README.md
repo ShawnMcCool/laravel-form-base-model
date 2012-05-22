@@ -174,3 +174,12 @@ The all() method returns an array of all field data.
 To clear persistent data from a form model just tell it to forget the input.
 
 	ExampleForm::forget_input();
+	
+**Saving form data to Eloquent model**
+
+	$user = new User;
+	
+	$user->first_name = ExampleForm::get( 'first_name' );
+	$user->last_name  = ExampleForm::get( 'last_name' );
+	
+	$user->save();

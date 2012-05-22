@@ -114,10 +114,12 @@ class FormBase_Model
 	}
 
 	/**
-	 * Retrieves input, stores it in the model's field_data array,
-	 * and serializes the array to the session.
+	 * Saves input from the $input parameter (array) into the form model's
+	 * field_data array if the key is present in the $fields array then 
+	 * serializes the field_data array to the session.
 	 * 
-	 * Only the fields declared in the $field array will be stored.
+	 * The $fields array is a simple array. Only the fields declared in 
+	 * the $field array will be stored.
 	 *
 	 * <code>
 	 *		// save form input data

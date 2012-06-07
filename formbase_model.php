@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * A Form Base-Model for Laravel
+ * 
+ * @author Shawn McCool <shawn@heybigname.com>
+ * @version 1.1
+ * @link http://github.com/shawnmccool/laravel-form-base-model
+ * @license MIT
+ *
+ */
+
 class FormBase_Model
 {
 

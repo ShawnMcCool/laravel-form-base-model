@@ -277,7 +277,7 @@ class FormBase_Model
 	 *		$email = ExampleForm::get( 'email' );
 	 *
 	 *		// Get the "email" and "first_name" items as an array
-	 *		$email = ExampleForm::get( array( 'email', 'first_name' ) );
+	 *		$data = ExampleForm::get( array( 'email', 'first_name' ) );
 	 *
 	 *		// Return a default value if the specified item doesn't exist
 	 *		$email = ExampleForm::get( 'email', 'not listed' );

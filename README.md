@@ -77,11 +77,7 @@ Then, update your bundles.php to auto-start the bundle.
 	{
 
 		if( ExampleForm::is_valid() )
-		{
-			
 			return Redirect::to_route( 'form_examples', array( 'simple_example_review' ) );
-
-		}
 		else
 			return Redirect::back()->with_input()->with_errors( ExampleForm::$validation );
 

@@ -31,6 +31,8 @@ Then, update your bundles.php to auto-start the bundle.
 
 ### Examples
 
+**Note:** More documentation can be found in formbase_model.php.
+
 **Example form model:**
 
 	class ExampleForm extends FormBase_Model

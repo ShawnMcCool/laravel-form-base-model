@@ -25,7 +25,7 @@
 <p>
 	Favorite Foods:
 	
-	<? $foods = ExampleForm::populate( 'favorite_foods', array() ); // workaround for blade forelse bug that i only just now found ?>
+	<? $foods = ExampleForm::old( 'favorite_foods', array() ); // workaround for blade forelse bug that i only just now found ?>
 
 	@forelse( $foods as $food_id )
 		{{ ExampleForm::$foods[$food_id] }}<br />

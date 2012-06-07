@@ -18,7 +18,7 @@ class FormBase_Model
 	 * @var array
 	 */
 	public static $rules = array();
-	
+
 	/**
 	 * The messages array stores Validator messages in an array indexed by
 	 * the field_name to which the messages should be applied in case of errors.
@@ -44,7 +44,7 @@ class FormBase_Model
 	 * <code>
 	 * 		// define rules within the form model
 	 * 		public static $rules = array( 'first_name' => 'required' );
-	 * 
+	 *
 	 *		// validate fields from the controller
 	 *		$is_valid = ExampleForm::is_valid( array( 'first_name', 'last_name' ) );
 	 * </code>
@@ -75,7 +75,7 @@ class FormBase_Model
 
 		if( is_array( $fields ) )
 		{
-			
+
 			$field_rules = array();
 
 			foreach( $fields as $field_name )
@@ -91,6 +91,11 @@ class FormBase_Model
 
 		if( empty( $field_rules) )
 			return true;
+
+		// remove empty rules
+
+		foreach( $field_rules as $field => $rules )
+			if( empty( $rules ) ) unset( $field_rules[$field] );
 
 		// generate the validator and return its success status
 
@@ -123,10 +128,10 @@ class FormBase_Model
 
 	/**
 	 * Saves input from the $input parameter (array) into the form model's
-	 * field_data array if the key is present in the $fields array then 
+	 * field_data array if the key is present in the $fields array then
 	 * serializes the field_data array to the session.
-	 * 
-	 * The $fields array is a simple array. Only the fields declared in 
+	 *
+	 * The $fields array is a simple array. Only the fields declared in
 	 * the $field array will be stored.
 	 *
 	 * <code>
@@ -156,7 +161,7 @@ class FormBase_Model
 		if( is_null( $input ) )
 			$input = Input::all();
 
-		// when storing input it's important to load the persistent form 
+		// when storing input it's important to load the persistent form
 		// data that may exist from previous requests, otherwise we will
 		// overwrite them
 
@@ -168,13 +173,7 @@ class FormBase_Model
 		// future given an appropriately convincing argument
 
 		foreach( $fields as $field_name )
-		{
-			if( Input::has( $field_name ) )
-				static::$field_data[$field_name] = Input::get( $field_name );
-			else
-				static::$field_data[$field_name] = '';
-
-		}
+			static::set( $field_name, Input::has( $field_name ) ? Input::get( $field_name ) : '' );
 
 		// serialize the field data to session
 
@@ -189,7 +188,7 @@ class FormBase_Model
 	{
 
 		// remove the persistent form data FOR-EV-ER, FOR-EV-ER, FOR..
-		
+
 		Session::forget( 'serialized_field_data[' .get_called_class(). ']' );
 
 	}
@@ -204,8 +203,59 @@ class FormBase_Model
 	 */
 	public static function has( $field_name )
 	{
-		
+
 		return isset( static::$field_data[$field_name] ) && !empty( static::$field_data[$field_name] );
+
+	}
+
+	/**
+	 * Set a value in the form's field data.
+	 *
+	 * <code>
+	 *		// Set the email's value
+	 *		ExampleForm::set( 'email', 'cat@bob.com' );
+	 * </code>
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $value
+	 * @return mixed
+	 */
+	public static function set( $key, $value )
+	{
+
+		// prevent need to manually load input when populating forms
+
+		if( empty( static::$field_data ) )
+			static::unserialize_from_session();
+
+		return static::$field_data[$key] = $value;
+
+	}
+
+	/**
+	 * Load data directly into the form model.
+	 *
+	 * <code>
+	 *		// Load in array data
+	 * 		$data = array( 'name' => 'Minecraft' );
+	 *		ExampleForm::load( $data );
+	 * 
+	 * 		// Load in data from Eloquent
+	 * 		$game = Game::find( 3 );
+	 * 		ExampleForm::load( $game );
+	 * </code>
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $value
+	 * @return mixed
+	 */
+	public static function load( $field_data )
+	{
+
+		if( $field_data instanceof \Eloquent )
+			return static::$field_data = $field_data->attributes;
+
+		return static::$field_data = (array) $field_data;
 
 	}
 
@@ -216,6 +266,9 @@ class FormBase_Model
 	 *		// Get the "email" item from the form's field data array
 	 *		$email = ExampleForm::get( 'email' );
 	 *
+	 *		// Get the "email" and "first_name" items as an array
+	 *		$email = ExampleForm::get( array( 'email', 'first_name' ) );
+	 *
 	 *		// Return a default value if the specified item doesn't exist
 	 *		$email = ExampleForm::get( 'email', 'not listed' );
 	 * </code>
@@ -224,7 +277,7 @@ class FormBase_Model
 	 * @param  mixed   $default
 	 * @return mixed
 	 */
-	public static function get( $field_name, $default = null )
+	public static function get( $fields, $default = null )
 	{
 
 		// prevent need to manually load input when populating forms
@@ -232,7 +285,26 @@ class FormBase_Model
 		if( empty( static::$field_data ) )
 			static::unserialize_from_session();
 
-		return static::has( $field_name ) ? static::$field_data[$field_name] : $default;
+		// if we request a single field, deliver that
+
+		if( !is_array( $fields ) )
+		{
+
+			return static::has( $fields ) ? static::$field_data[$fields] : $default;
+
+		}
+
+		$return_fields = array();
+
+		foreach( (array) $fields as $field )
+		{
+
+			if( static::has( $field ) )
+				$return_fields[$field] = static::get( $field );
+
+		}
+
+		return $return_fields;
 
 	}
 
@@ -249,22 +321,24 @@ class FormBase_Model
 	}
 
 	/**
-	 * Use to populate a form field. Loads the field's value from 
-	 * flashed input data, if that's not present it loads the value
+	 * Use to populate a form field. Loads the field's value from
+	 * flashed input data, if that's not present it loads the value.
+	 * 
+	 * Functions much like Input::old()
 	 *
 	 * <code>
-	 *		// Get the "email" item from the form's field data array
-	 *		$email = ExampleForm::get( 'email' );
-	 *
-	 *		// Return a default value if the specified item doesn't exist
-	 *		$email = ExampleForm::get( 'email', 'not listed' );
+	 * 		// usage in a form
+	 * 		{{ Form::text( 'first_name', ExampleForm::old( 'first_name' ) ) }}
+	 * 
+	 * 		// get an array of values
+	 * 		$old_values = ExampleForm::old( array( 'first_name', 'last_name' ) );
 	 * </code>
 	 *
 	 * @param  string  $key
 	 * @param  mixed   $default
 	 * @return mixed
 	 */
-	public static function populate( $field_name, $default = null )
+	public static function old( $fields, $default = null )
 	{
 
 		// prevent need to manually load input when populating forms
@@ -274,7 +348,15 @@ class FormBase_Model
 
 		// return input flash data, fallback on persistent for data, fallback on default
 
-		return Input::old( $field_name, static::get( $field_name, $default ) );
+		if( !is_array( $fields ) )
+			return Input::old( $fields, static::get( $fields, $default ) );
+
+		$return_fields = array();
+
+		foreach( (array) $fields as $field )
+			$return_fields[$field] = Input::old( $field, static::get( $field, $default ) );
+
+		return $return_fields;
 
 	}
 

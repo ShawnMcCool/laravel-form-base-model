@@ -1,13 +1,12 @@
 <?php
 
 /**
- * A Form Base-Model for Laravel
- * 
- * @author Shawn McCool <shawn@heybigname.com>
- * @version 1.1
- * @link http://github.com/shawnmccool/laravel-form-base-model
- * @license MIT
+ * form-base-model : A form base model for use with the Laravel PHP framework.
  *
+ * @package  laravel-form-base-model
+ * @version  1.2
+ * @author   Shawn McCool <shawn@heybigname.com>
+ * @link     https://github.com/shawnmccool/laravel-form-base-model
  */
 
 class FormBase_Model
@@ -45,6 +44,14 @@ class FormBase_Model
 	 * @var object
 	 */
 	public static $validation = false;
+
+	/**
+	 * If an array or object is loaded into the form model using the load() method
+	 * the $loaded variable will contain that original array or object.
+	 * 
+	 * @var object
+	 */
+	public static $loaded = null;
 
 	/**
 	 * Validates input data. Only fields present in the $fields array
@@ -242,25 +249,10 @@ class FormBase_Model
 
 	}
 
-	/**
-	 * Load data directly into the form model.
-	 *
-	 * <code>
-	 *		// Load in array data
-	 * 		$data = array( 'name' => 'Minecraft' );
-	 *		ExampleForm::load( $data );
-	 * 
-	 * 		// Load in data from Eloquent
-	 * 		$game = Game::find( 3 );
-	 * 		ExampleForm::load( $game );
-	 * </code>
-	 *
-	 * @param  string  $key
-	 * @param  mixed   $value
-	 * @return mixed
-	 */
 	public static function load( $field_data )
 	{
+
+		static::$loaded = $field_data;
 
 		if( $field_data instanceof \Eloquent )
 			return static::$field_data = $field_data->attributes;
@@ -277,7 +269,7 @@ class FormBase_Model
 	 *		$email = ExampleForm::get( 'email' );
 	 *
 	 *		// Get the "email" and "first_name" items as an array
-	 *		$data = ExampleForm::get( array( 'email', 'first_name' ) );
+	 *		$email = ExampleForm::get( array( 'email', 'first_name' ) );
 	 *
 	 *		// Return a default value if the specified item doesn't exist
 	 *		$email = ExampleForm::get( 'email', 'not listed' );
@@ -332,16 +324,9 @@ class FormBase_Model
 
 	/**
 	 * Use to populate a form field. Loads the field's value from
-	 * flashed input data, if that's not present it loads the value.
-	 * 
-	 * Functions much like Input::old()
+	 * flashed input data, if that's not present it loads the value
 	 *
 	 * <code>
-	 * 		// usage in a form
-	 * 		{{ Form::text( 'first_name', ExampleForm::old( 'first_name' ) ) }}
-	 * 
-	 * 		// get an array of values
-	 * 		$old_values = ExampleForm::old( array( 'first_name', 'last_name' ) );
 	 * </code>
 	 *
 	 * @param  string  $key
@@ -363,10 +348,35 @@ class FormBase_Model
 
 		$return_fields = array();
 
+
 		foreach( (array) $fields as $field )
 			$return_fields[$field] = Input::old( $field, static::get( $field, $default ) );
 
 		return $return_fields;
+
+	}
+
+	/**
+	 * Use to populate a checkbox form field. Use this for checkboxes instead
+	 * of old(). The first parameter is the field name, the second is the value
+	 * of the checkbox. The third is a boolean that determines the default
+	 * state of the checkbox.
+	 *
+	 * <code>
+	 * </code>
+	 *
+	 * @param  string  $field
+	 * @param  string  $value
+	 * @param  mixed   $default
+	 * @return mixed
+	 */
+	public static function old_checkbox( $field, $value, $default = false )
+	{
+
+		if( Input::old( $field ) && is_array( Input::old( $field ) ) )
+			return in_array( $value, Input::old( $field ) ) ? true : $default;
+		else
+			return $default;
 
 	}
 

@@ -1,6 +1,6 @@
 ## A Form Base-Model for Laravel
 
-**Version: 1.1**
+**Version: 1.2**
 
 Forms are often used to interact with a specific model such as a user or a blog post. However, in many circumstances a form may collect data that is related to multiple data models. Consequently, may also have special validation requirements that have little to do with the underlying data, such as captcha and password confirmation. Consequently, it often makes sense to create a form model. A form model represents the data needs of a form. This may be validation alone, storing values for form select drop-downs, having custom methods to generate data for the form, or managing persistent data in a session to make multi-page forms simple.
 
@@ -13,6 +13,12 @@ This form base-model is currently in development. It is very likely that this cl
 - Simple form field re-population.
 - Interface for accessing persistent form-data.
 
+### Recent Changes
+
+**1.2**
+	- Added $loaded attribute which is populated by whatever object or array is sent to the load() method.
+	- Added old_checkbox() method which is used to populate checkboxes from old input. More functionality will be added to this method once I or someone else decides on an appropriate algorithm.
+	
 ### Installation
 
 Install with artisan

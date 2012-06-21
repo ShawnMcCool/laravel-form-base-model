@@ -318,6 +318,9 @@ class FormBase_Model
 	public static function all()
 	{
 
+		if( empty( static::$field_data ) )
+			static::unserialize_from_session();
+		
 		return static::$field_data;
 
 	}

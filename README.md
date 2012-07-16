@@ -6,6 +6,8 @@ Forms are often used to interact with a specific model such as a user or a blog 
 
 This form base-model is currently in development. It is very likely that this class will be continuously refactored over time to support more use-cases. This project is open for community participation so please feel free to submit issues and/or pull-requests.
 
+[A video explaining the usage of a form model can be found here.](http://heybigname.com/2012/05/22/introduction-to-the-form-model/)
+
 ### Feature Overview
 
 - Form validation mechanism.

@@ -1,15 +1,15 @@
-<?php
+<?php namespace FormBaseModel;
 
 /**
  * form-base-model : A form base model for use with the Laravel PHP framework.
  *
  * @package  laravel-form-base-model
- * @version  1.2
+ * @version  1.3
  * @author   Shawn McCool <shawn@heybigname.com>
  * @link     https://github.com/shawnmccool/laravel-form-base-model
  */
 
-class FormBase_Model
+class Base
 {
 
 	/**
@@ -18,7 +18,7 @@ class FormBase_Model
 	 *
 	 * @var array
 	 */
-	protected static $field_data = array();
+	public static $field_data = null;
 
 	/**
 	 * The rules array stores Validator rules in an array indexed by
@@ -54,6 +54,36 @@ class FormBase_Model
 	public static $loaded = null;
 
 	/**
+	 * True if custom validators have been loaded.
+	 * 
+	 * @var object
+	 */
+	public static $custom_validators_loaded = null;
+
+	/**
+	 * This method should be overridden in order to add custom validators
+	 */
+	public static function register_validators()
+	{
+
+	}
+
+	/**
+	 * Resets the form model to its vanilla form. Mostly used for tests.
+	 */
+	public static function reset()
+	{
+
+		static::$field_data               = null;
+		static::$rules                    = array();
+		static::$messages                 = array();
+		static::$validation               = false;
+		static::$loaded                   = null;
+		static::$custom_validators_loaded = null;
+
+	}
+
+	/**
 	 * Validates input data. Only fields present in the $fields array
 	 * will be validated. Rules must be defined in the form model's
 	 * static $rules array.
@@ -63,9 +93,11 @@ class FormBase_Model
 	 * 		public static $rules = array( 'first_name' => 'required' );
 	 *
 	 *		// validate fields from the controller
-	 *		$is_valid = ExampleForm::is_valid( array( 'first_name', 'last_name' ) );
+	 *		$is_valid = ExampleForm::is_valid( array( 'first_name', 'last_name' ));
 	 * </code>
 	 *
+	 * Tested
+	 * 
 	 * @param  array   $fields
 	 * @param  array   $input
 	 * @return bool
@@ -73,50 +105,59 @@ class FormBase_Model
 	public static function is_valid( $fields = null, $input = null )
 	{
 
+		// register a user's custom validators
+		static::register_validators();
+
 		// $fields must be an array or null, a null value represents
 		// that all fields should be validated
-
-		if( !is_array( $fields ) && !is_null( $fields ) )
+		if( !is_array( $fields ) && !is_null( $fields ))
 			return false;
 
 		// if input is null then pull all input from the input class
-
-		if( is_null( $input ) )
-			$input = Input::all();
+		if( is_null( $input ))
+		{
+			$input = \Input::all();
+		}
 
 		// if $fields is an array then we need to walk through the
 		// rules defined in the form model and pull out any that
 		// apply to the fields that were defined
-
-		// if $fields isn't an array then apply all rules
-
-		if( is_array( $fields ) )
+		if( is_array( $fields ))
 		{
 
 			$field_rules = array();
 
 			foreach( $fields as $field_name )
-				if( array_key_exists( $field_name, static::$rules ) )
+			{
+				if( array_key_exists( $field_name, static::$rules ))
 					$field_rules[$field_name] = static::$rules[$field_name];
+			}
 
 		}
 		else
+		{
+			
+			// if $fields isn't an array then apply all rules
 			$field_rules = static::$rules;
+
+		}
 
 		// if no rules apply to the fields that we're validating then
 		// validation passes
-
-		if( empty( $field_rules) )
+		if( empty( $field_rules ))
 			return true;
 
 		// remove empty rules
-
 		foreach( $field_rules as $field => $rules )
-			if( empty( $rules ) ) unset( $field_rules[$field] );
+		{
+
+			if( empty( $rules ))
+				unset( $field_rules[$field] );
+
+		}
 
 		// generate the validator and return its success status
-
-		static::$validation = Validator::make( $input, $field_rules, static::$messages );
+		static::$validation = \Validator::make( $input, $field_rules, static::$messages );
 
 		return static::$validation->passes();
 
@@ -124,22 +165,54 @@ class FormBase_Model
 
 	/**
 	 * Serialize the model's field data to the session.
+	 * 
+	 * Tested
 	 */
-	private static function serialize_to_session()
+	public static function serialize_to_session()
 	{
 
-		Session::put( 'serialized_field_data[' .get_called_class(). ']', serialize( static::$field_data ) );
+		if( is_null( static::$field_data ))
+		{
+
+			// serialize an empty array
+			$serialized_data = serialize( array() );
+
+		}
+		else
+		{
+
+			// serialize the stored field data
+			$serialized_data = serialize( static::$field_data->attributes );
+
+		}
+
+		\Session::put( 'serialized_field_data[' .get_called_class(). ']', $serialized_data );
 
 	}
 
 	/**
 	 * Unserialize the model's field data from a session
+	 * 
+	 * Tested
 	 */
-	private static function unserialize_from_session()
+	public static function unserialize_from_session()
 	{
 
-		if( Session::has( 'serialized_field_data[' .get_called_class(). ']' ) )
-			static::$field_data = unserialize( Session::get( 'serialized_field_data[' .get_called_class(). ']' ) );
+		if( \Session::has( 'serialized_field_data[' .get_called_class(). ']' ))
+		{
+
+			$data = unserialize( \Session::get( 'serialized_field_data[' .get_called_class(). ']' ));
+
+			static::$field_data = new \Laravel\Fluent( $data );
+
+		}
+		else
+		{
+
+			// initialize static::$field_data
+			static::$field_data = new \Laravel\Fluent;
+
+		}
 
 	}
 
@@ -153,9 +226,11 @@ class FormBase_Model
 	 *
 	 * <code>
 	 *		// save form input data
-	 *		ExampleForm::save_input( array( 'first_name', 'last_name' ) );
+	 *		ExampleForm::save_input( array( 'first_name', 'last_name' ));
 	 * </code>
-	 *
+	 * 
+	 * Tested
+	 * 
 	 * @param  array   $fields
 	 * @param  array   $input
 	 */
@@ -163,50 +238,62 @@ class FormBase_Model
 	{
 
 		// $fields must be an array
-
-		if( !is_array( $fields ) && !is_null( $fields) )
+		if( !is_array( $fields ) && !is_null( $fields ))
 			return false;
 
 		// by default we save all fields
-
-		if( is_null( $fields ) )
-			$fields = array_keys( Input::all() );
+		if( is_null( $fields ))
+			$fields = array_keys( \Input::all() );
 
 		// by default we save all input, this can be overridden by passing
 		// a second parameter to the save_input() method
+		if( is_null( $input ))
+		{
 
-		if( is_null( $input ) )
-			$input = Input::all();
+			// create a fluent class containing the input data from a get/post
+			$input = new \Laravel\Fluent( \Input::all() );
+
+		}
+		else
+		{
+
+			// create a fluent class containing the input data from the method argument
+			$input = new \Laravel\Fluent( $input );
+
+		}
 
 		// when storing input it's important to load the persistent form
 		// data that may exist from previous requests, otherwise we will
 		// overwrite them
-
-		if( empty( static::$field_data ) )
+		if( is_null( static::$field_data ))
 			static::unserialize_from_session();
 
 		// ideally we'll have either a value for a field or an empty value
 		// for a field. this isn't strictly necessary and may change in the
 		// future given an appropriately convincing argument
-
 		foreach( $fields as $field_name )
-			static::set( $field_name, Input::has( $field_name ) ? Input::get( $field_name ) : '' );
+		{
+
+			// assign a value in the internal field_data store
+			static::set( $field_name, $input->$field_name );
+			
+		}
 
 		// serialize the field data to session
-
 		static::serialize_to_session();
 
 	}
 
 	/**
 	 * Empty persistent form field_data.
+	 * 
+	 * Tested
 	 */
 	public static function forget_input()
 	{
 
 		// remove the persistent form data FOR-EV-ER, FOR-EV-ER, FOR..
-
-		Session::forget( 'serialized_field_data[' .get_called_class(). ']' );
+		\Session::forget( 'serialized_field_data[' .get_called_class(). ']' );
 
 	}
 
@@ -215,13 +302,15 @@ class FormBase_Model
 	 *
 	 * If the field doesn't exist in the field_data, false will be returned.
 	 *
+	 * Tested
+	 * 
 	 * @param  string  $field_name
 	 * @return bool
 	 */
 	public static function has( $field_name )
 	{
 
-		return isset( static::$field_data[$field_name] ) && !empty( static::$field_data[$field_name] );
+		return !is_null( static::$field_data ) && !is_null( static::$field_data->$field_name );
 
 	}
 
@@ -230,9 +319,11 @@ class FormBase_Model
 	 *
 	 * <code>
 	 *		// Set the email's value
-	 *		ExampleForm::set( 'email', 'cat@bob.com' );
+	 *		ExampleForm::set( 'email', 'shawn@heybigname.com' );
 	 * </code>
 	 *
+	 * Tested
+	 * 
 	 * @param  string  $key
 	 * @param  mixed   $value
 	 * @return mixed
@@ -241,23 +332,54 @@ class FormBase_Model
 	{
 
 		// prevent need to manually load input when populating forms
-
-		if( empty( static::$field_data ) )
+		if( is_null( static::$field_data ))
 			static::unserialize_from_session();
 
-		return static::$field_data[$key] = $value;
+		return static::$field_data->$key = $value;
 
 	}
 
-	public static function load( $field_data )
+	/**
+	 * Load an object or array into the form model's persistent field_data store
+	 *
+	 * <code>
+	 *		// Load an Eloquent model
+	 * 		$user = User::find( 1 );
+	 *		ExampleForm::load( $user );
+	 * 
+	 * 		// Load an array
+	 * 		ExampleForm::load( array('best movie ever' => 'Primer' ));
+	 * </code>
+	 * 
+	 * Tested 
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $value
+	 * @return mixed
+	 */
+	public static function load( $data )
 	{
 
-		static::$loaded = $field_data;
+		static::$loaded = $data;
 
-		if( $field_data instanceof \Eloquent )
-			return static::$field_data = $field_data->attributes;
+		if( $data instanceof \Eloquent )
+			return static::$field_data = new \Laravel\Fluent( $data->attributes );
 
-		return static::$field_data = (array) $field_data;
+		return static::$field_data = new \Laravel\Fluent( $data );
+
+	}
+
+	/**
+	 * Returns true if the form has been loaded with data.
+	 * 
+	 * Tested
+	 * 
+	 * @return bool
+	 */
+	public static function loaded()
+	{
+
+		return !is_null( static::$loaded );
 
 	}
 
@@ -269,12 +391,14 @@ class FormBase_Model
 	 *		$email = ExampleForm::get( 'email' );
 	 *
 	 *		// Get the "email" and "first_name" items as an array
-	 *		$email = ExampleForm::get( array( 'email', 'first_name' ) );
+	 *		$email = ExampleForm::get( array( 'email', 'first_name' ));
 	 *
 	 *		// Return a default value if the specified item doesn't exist
 	 *		$email = ExampleForm::get( 'email', 'not listed' );
 	 * </code>
 	 *
+	 * Tested
+	 * 
 	 * @param  string  $key
 	 * @param  mixed   $default
 	 * @return mixed
@@ -283,25 +407,25 @@ class FormBase_Model
 	{
 
 		// prevent need to manually load input when populating forms
-
-		if( empty( static::$field_data ) )
+		// by unserializing here
+		if( is_null( static::$field_data ))
 			static::unserialize_from_session();
 
 		// if we request a single field, deliver that
-
-		if( !is_array( $fields ) )
+		if( !is_array( $fields ))
 		{
 
-			return static::has( $fields ) ? static::$field_data[$fields] : $default;
+			return static::has( $fields ) ? static::$field_data->$fields : $default;
 
 		}
 
+		// create an array that'll hold fields that we'll be returning
 		$return_fields = array();
 
-		foreach( (array) $fields as $field )
+		foreach( $fields as $field )
 		{
 
-			if( static::has( $field ) )
+			if( static::has( $field ))
 				$return_fields[$field] = static::get( $field );
 
 		}
@@ -313,25 +437,32 @@ class FormBase_Model
 	/**
 	 * Get all of the persistent form data.
 	 *
+	 * Tested
+	 * 
 	 * @return array
 	 */
 	public static function all()
 	{
 
-		if( empty( static::$field_data ) )
+		if( is_null( static::$field_data ))
 			static::unserialize_from_session();
 		
-		return static::$field_data;
+		return static::$field_data->attributes;
 
 	}
 
 	/**
 	 * Use to populate a form field. Loads the field's value from
-	 * flashed input data, if that's not present it loads the value
+	 * flashed input data, if that's not present it serves up the
+	 * default value
 	 *
 	 * <code>
+	 *   echo Form::text( 'first_name', ExampleForm::old( 'first_name' ));
+	 *	 echo Form::text( 'number_of_turtles', ExampleForm::old( 'number_of_turtles', 4 ));
 	 * </code>
 	 *
+	 * Tested
+	 * 
 	 * @param  string  $key
 	 * @param  mixed   $default
 	 * @return mixed
@@ -340,20 +471,25 @@ class FormBase_Model
 	{
 
 		// prevent need to manually load input when populating forms
-
-		if( empty( static::$field_data ) )
+		if( is_null( static::$field_data ))
 			static::unserialize_from_session();
 
 		// return input flash data, fallback on persistent for data, fallback on default
+		$hierarchical_data = new \Laravel\Fluent( array_merge( static::all(), \Input::old() ));
 
-		if( !is_array( $fields ) )
-			return Input::old( $fields, static::get( $fields, $default ) );
+		// if we're not requesting multiple fields let's just return a scalar
+		if( !is_array( $fields ))
+			return !is_null( $hierarchical_data->$fields ) ? $hierarchical_data->$fields : $default;
 
+		// we're returning multiple fields so they'll need to be sent as an array
 		$return_fields = array();
 
+		foreach( $fields as $field )
+		{
 
-		foreach( (array) $fields as $field )
-			$return_fields[$field] = Input::old( $field, static::get( $field, $default ) );
+			$return_fields[$field] = !is_null( $hierarchical_data->$field ) ? $hierarchical_data->$field : $default;
+			
+		}
 
 		return $return_fields;
 
@@ -366,7 +502,10 @@ class FormBase_Model
 	 * state of the checkbox.
 	 *
 	 * <code>
+	 * 		echo Form::checkbox( 'active', 1, ExampleForm::old_checkbox( 'active', $user->active, true ));
 	 * </code>
+	 * 
+	 * Tested
 	 *
 	 * @param  string  $field
 	 * @param  string  $value
@@ -376,8 +515,18 @@ class FormBase_Model
 	public static function old_checkbox( $field, $value, $default = false )
 	{
 
-		if( Input::old( $field ) && is_array( Input::old( $field ) ) )
-			return in_array( $value, Input::old( $field ) ) ? true : $default;
+		// return input flash data, fallback on persistent for data, fallback on default
+		$hierarchical_data = new \Laravel\Fluent( array_merge( static::all(), \Input::old() ));
+
+		if( $hierarchical_data->$field )
+		{
+
+			if( is_array( $hierarchical_data->$field ))
+				return in_array( $value, $hierarchical_data->$field ) ? true : $default;
+			else
+				return $hierarchical_data->$field == $value ? true : $default;
+
+		}
 		else
 			return $default;
 

@@ -2,8 +2,8 @@
 
 // register the class
 
-Autoloader::map(array(
-    'FormBase_Model' => __DIR__.'/formbase_model.php',
+Autoloader::namespaces(array(
+    'FormBaseModel' => __DIR__,
 ));
 
 // register the example code

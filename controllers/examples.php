@@ -25,13 +25,12 @@ class Form_Base_Model_Examples_Controller extends Controller
 	{
 
 		// define which fields this request will validate and save
-
 		if( ExampleForm::is_valid() )
 		{
 			
 			ExampleForm::save_input();
 			
-			return Redirect::to_route( 'form_examples', array( 'simple_example_review' ) );
+			return Redirect::to_route( 'form_examples', array( 'simple_example_review' ));
 
 		}
 		else
@@ -53,7 +52,7 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 		ExampleForm::forget_input();
 
-		return Redirect::to_route( 'form_examples', array( 'multi_page_example_one' ) );
+		return Redirect::to_route( 'form_examples', array( 'multi_page_example_one' ));
 
 	}
 
@@ -73,7 +72,7 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 		// validate form and redirect with errors on failure
 
-		if( ExampleForm::is_valid( $fields ) )
+		if( ExampleForm::is_valid( $fields ))
 		{
 		
 			// save input to session
@@ -82,7 +81,7 @@ class Form_Base_Model_Examples_Controller extends Controller
 			
 			// redirect to the next page
 
-			return Redirect::to_route( 'form_examples', array( 'multi_page_example_two' ) );
+			return Redirect::to_route( 'form_examples', array( 'multi_page_example_two' ));
 
 		}
 		else
@@ -102,12 +101,12 @@ class Form_Base_Model_Examples_Controller extends Controller
 		
 		$fields = array( 'street_address', 'suite_number', 'favorite_foods' );
 
-		if( ExampleForm::is_valid( $fields ) )
+		if( ExampleForm::is_valid( $fields ))
 		{
 			
 			ExampleForm::save_input( $fields );
 			
-			return Redirect::to_route( 'form_examples', array( 'multi_page_example_review' ) );
+			return Redirect::to_route( 'form_examples', array( 'multi_page_example_review' ));
 
 		}
 		else

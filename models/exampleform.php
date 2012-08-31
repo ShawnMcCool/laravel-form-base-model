@@ -1,6 +1,6 @@
 <?php
 
-class ExampleForm extends FormBase_Model
+class ExampleForm extends FormBaseModel\Base
 {
 
 	public static $rules = array(

@@ -1,6 +1,6 @@
 ## A Form Base-Model for Laravel
 
-**Version: 1.2**
+**Version: 1.3**
 
 Forms are often used to interact with a specific model such as a user or a blog post. However, in many circumstances a form may collect data that is related to multiple data models. Consequently, may also have special validation requirements that have little to do with the underlying data, such as captcha and password confirmation. Consequently, it often makes sense to create a form model. A form model represents the data needs of a form. This may be validation alone, storing values for form select drop-downs, having custom methods to generate data for the form, or managing persistent data in a session to make multi-page forms simple.
 
@@ -17,10 +17,15 @@ This form base-model is currently in development. It is very likely that this cl
 
 ### Recent Changes
 
+**1.3**
+	- Heavy refactoring of the class
+	- Namespaced to FormBaseModel
+	- Class renamed to Base
+	- Added unit-testing
 **1.2**
 	- Added $loaded attribute which is populated by whatever object or array is sent to the load() method.
 	- Added old_checkbox() method which is used to populate checkboxes from old input. More functionality will be added to this method once I or someone else decides on an appropriate algorithm.
-	
+
 ### Installation
 
 Install with artisan
@@ -39,11 +44,11 @@ Then, update your bundles.php to auto-start the bundle.
 
 ### Examples
 
-**Note:** More documentation can be found in formbase_model.php.
+**Note:** More documentation can be found in base.php.
 
 **Example form model:**
 
-	class ExampleForm extends FormBase_Model
+	class ExampleForm extends FormBaseModel\Base
 	{
 
 		public static $rules = array(
@@ -73,7 +78,6 @@ Then, update your bundles.php to auto-start the bundle.
 **Simple example controller usage:**
 
 	// simple form example
-
 	public function get_simple_example()
 	{
 
@@ -85,7 +89,7 @@ Then, update your bundles.php to auto-start the bundle.
 	{
 
 		if( ExampleForm::is_valid() )
-			return Redirect::to_route( 'form_examples', array( 'simple_example_review' ) );
+			return Redirect::to_route( 'form_examples', array( 'simple_example_review' ));
 		else
 			return Redirect::back()->with_input()->with_errors( ExampleForm::$validation );
 
@@ -97,10 +101,9 @@ Then, update your bundles.php to auto-start the bundle.
 	{
 
 		// clear any lingering persistent data as we generate a new form instance
-
 		ExampleForm::forget_input();
 
-		return Redirect::to_route( 'form_examples', array( 'multi_page_example_one' ) );
+		return Redirect::to_route( 'form_examples', array( 'multi_page_example_one' ));
 
 	}
 
@@ -115,21 +118,17 @@ Then, update your bundles.php to auto-start the bundle.
 	{
 
 		// define which fields this request will validate and save
-
 		$fields = array( 'first_name', 'last_name', 'status' );
 
 		// validate form and redirect with errors on failure
-
-		if( ExampleForm::is_valid( $fields ) )
+		if( ExampleForm::is_valid( $fields ))
 		{
 		
 			// save input to session
-
 			ExampleForm::save_input( $fields );
 			
 			// redirect to the next page
-
-			return Redirect::to_route( 'form_examples', array( 'multi_page_example_two' ) );
+			return Redirect::to_route( 'form_examples', array( 'multi_page_example_two' ));
 
 		}
 		else
@@ -148,13 +147,13 @@ Then, update your bundles.php to auto-start the bundle.
 	{
 		
 		$fields = array( 'street_address', 'suite_number', 'favorite_foods' );
-
-		if( ExampleForm::is_valid( $fields ) )
+		
+		if( ExampleForm::is_valid( $fields ))
 		{
 			
 			ExampleForm::save_input( $fields );
 			
-			return Redirect::to_route( 'form_examples', array( 'multi_page_example_review' ) );
+			return Redirect::to_route( 'form_examples', array( 'multi_page_example_review' ));
 
 		}
 		else
@@ -214,7 +213,7 @@ When it's time to save the data from your form to your database just access the 
 
 	// alternatively you can return the data as an array
 
-	$user = new User( ExampleForm::get( array( 'first_name', 'last_name' ) ) );
+	$user = new User( ExampleForm::get( array( 'first_name', 'last_name' )));
 
 **Example of a properly formed controller action that handles form post data.**
 
@@ -224,7 +223,7 @@ When it's time to save the data from your form to your database just access the 
 		if( !ProgramForm::is_valid() )
 			return Redirect::back()->with_input()->with_errors( ProgramForm::$validation );
 
-		$program = new Program( Input::only( array( 'title', 'description' ) ) );
+		$program = new Program( Input::only( array( 'title', 'description' )));
 
 		if( !$program->is_valid() )
 			return Redirect::back()->with_input()->with_errors( $program->$validation );

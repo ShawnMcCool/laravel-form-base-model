@@ -18,13 +18,14 @@ This form base-model is currently in development. It is very likely that this cl
 ### Recent Changes
 
 **1.3**
-	- Heavy refactoring of the class
-	- Namespaced to FormBaseModel
-	- Class renamed to Base
-	- Added unit-testing
+- Heavy refactoring of the class
+- Namespaced to FormBaseModel
+- Class renamed to Base
+- Added unit-testing
+
 **1.2**
-	- Added $loaded attribute which is populated by whatever object or array is sent to the load() method.
-	- Added old_checkbox() method which is used to populate checkboxes from old input. More functionality will be added to this method once I or someone else decides on an appropriate algorithm.
+- Added $loaded attribute which is populated by whatever object or array is sent to the load() method.
+- Added old_checkbox() method which is used to populate checkboxes from old input. More functionality will be added to this method once I or someone else decides on an appropriate algorithm.
 
 ### Installation
 

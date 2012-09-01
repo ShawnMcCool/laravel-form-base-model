@@ -167,7 +167,7 @@ Then, update your bundles.php to auto-start the bundle.
 
 The old() method will fill a form field with the value stored in the persistent form data. It supports an optional second parameter that represents the default value which should be returned when the requested field data is empty. If input flash data exists (should there be validation errors and the user is redirected to the form to correct them) then the flash data will be used instead.
 
-	First Name: {{ Form::text( 'first_name', ExampleForm::old( 'first_name' ) ) }}
+	First Name: {{ Form::text( 'first_name', ExampleForm::old( 'first_name' )) }}
 
 **Retrieve form data for processing**
 
@@ -181,7 +181,7 @@ Use the load() method to populate form data. In this way it's possible to use th
 
 	// load from array
 
-	ExampleForm::load( array( 'first_name', 'last_name' ) );
+	ExampleForm::load( array( 'first_name', 'last_name' ));
 
 	// load from eloquent
 

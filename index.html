@@ -40,7 +40,13 @@
 
         <h3>Why model forms?</h3>
 
-<p>Form validation is generally not the same as validating your data models. Form models are also a convenient location to store form-specific presentation such as static arrays for populating select drop-downs. </p>
+<p>Forms have their own data needs that are separate from the underlying data-types that they may be used to modify. Forms also have different validation needs than these underlying data-types. </p>
+
+<p>You may need to populate a drop-down select field with static values from an array or from methods which fetch data from other models. There's no reason to prepare, populate and validate forms in the controller.</p>
+
+<p>Forms may also be constructed "wizard style" which splits up a large form into many smaller forms which span many pages. By handling this with the form model your controller won't be filled with session data management code.</p>
+
+<p>In short, they provide a place to put things that have traditionally belonged in neither the controller nor our database models.</p>
 
 <p><a href="http://heybigname.com/2012/05/22/introduction-to-the-form-model/">A video explaining a bit more about form models can be found here.</a></p>
 

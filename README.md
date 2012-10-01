@@ -223,7 +223,7 @@ When it's time to save the data from your form to your database just access the 
 		// https://github.com/ShawnMcCool/laravel-eloquent-base-model
 		if( !$program->is_valid() )
 		{
-			return Redirect::back()->with_input()->with_errors( $program->$validation );
+			return Redirect::back()->with_input()->with_errors( $program->validation );
 		}
 
 		$program->save();

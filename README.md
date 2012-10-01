@@ -81,7 +81,7 @@ Then, update your bundles.php to auto-start the bundle.
 
 		public static function before_validation()
 		{
-			// register custom validators, modify rules, etc 
+			// register custom validators, modify rules, etc
 		}
 	}
 
@@ -219,6 +219,8 @@ When it's time to save the data from your form to your database just access the 
 
 		$program = new Program( Input::only( array( 'title', 'description' )));
 
+		// here i'm using my eloquent base model to validate
+		// https://github.com/ShawnMcCool/laravel-eloquent-base-model
 		if( !$program->is_valid() )
 		{
 			return Redirect::back()->with_input()->with_errors( $program->$validation );

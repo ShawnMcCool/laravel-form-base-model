@@ -9,7 +9,7 @@
  * @link     https://github.com/shawnmccool/laravel-form-base-model
  */
 
-class Base
+abstract class Base
 {
 
 	/**
@@ -61,9 +61,10 @@ class Base
 	public static $custom_validators_loaded = null;
 
 	/**
-	 * This method should be overridden in order to add custom validators
+	 * This method can be overridden in order to add custom validators, generate
+	 * custom validation messages with expressions, or whatever.
 	 */
-	public static function register_validators()
+	public static function before_validation()
 	{
 
 	}
@@ -105,8 +106,8 @@ class Base
 	public static function is_valid( $fields = null, $input = null )
 	{
 
-		// register a user's custom validators
-		static::register_validators();
+		// run before_validation hook
+		static::before_validation();
 
 		// $fields must be an array or null, a null value represents
 		// that all fields should be validated

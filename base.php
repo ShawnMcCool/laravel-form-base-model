@@ -11,14 +11,13 @@
 
 abstract class Base
 {
-
 	/**
 	 * The internal field_data array used for storing persistent data
 	 * across multi-page forms.
 	 *
 	 * @var array
 	 */
-	public static $field_data = null;
+	public static $field_data = array();
 
 	/**
 	 * The rules array stores Validator rules in an array indexed by
@@ -66,7 +65,6 @@ abstract class Base
 	 */
 	public static function before_validation()
 	{
-
 	}
 
 	/**
@@ -74,14 +72,12 @@ abstract class Base
 	 */
 	public static function reset()
 	{
-
-		static::$field_data               = null;
+		static::$field_data               = array();
 		static::$rules                    = array();
 		static::$messages                 = array();
 		static::$validation               = false;
 		static::$loaded                   = null;
 		static::$custom_validators_loaded = null;
-
 	}
 
 	/**
@@ -105,14 +101,15 @@ abstract class Base
 	 */
 	public static function is_valid( $fields = null, $input = null )
 	{
-
 		// run before_validation hook
 		static::before_validation();
 
 		// $fields must be an array or null, a null value represents
 		// that all fields should be validated
 		if( !is_array( $fields ) && !is_null( $fields ))
+		{
 			return false;
+		}
 
 		// if input is null then pull all input from the input class
 		if( is_null( $input ))
@@ -125,43 +122,42 @@ abstract class Base
 		// apply to the fields that were defined
 		if( is_array( $fields ))
 		{
-
 			$field_rules = array();
 
 			foreach( $fields as $field_name )
 			{
 				if( array_key_exists( $field_name, static::$rules ))
+				{
 					$field_rules[$field_name] = static::$rules[$field_name];
+				}
 			}
-
 		}
 		else
 		{
-			
 			// if $fields isn't an array then apply all rules
 			$field_rules = static::$rules;
-
 		}
 
 		// if no rules apply to the fields that we're validating then
 		// validation passes
 		if( empty( $field_rules ))
+		{
 			return true;
+		}
 
 		// remove empty rules
 		foreach( $field_rules as $field => $rules )
 		{
-
 			if( empty( $rules ))
+			{
 				unset( $field_rules[$field] );
-
+			}
 		}
 
 		// generate the validator and return its success status
 		static::$validation = \Validator::make( $input, $field_rules, static::$messages );
 
 		return static::$validation->passes();
-
 	}
 
 	/**
@@ -171,24 +167,22 @@ abstract class Base
 	 */
 	public static function serialize_to_session()
 	{
+		$class_name   = get_called_class();
+		$session_name = 'serialized_field_data[' .$class_name. ']';
 
-		if( is_null( static::$field_data ))
+		// does this class have field data to serialize?
+		if( !isset( static::$field_data[$class_name] ) || empty( static::$field_data[$class_name]->attributes ))
 		{
-
-			// serialize an empty array
+			// if not, serialize an empty array
 			$serialized_data = serialize( array() );
-
 		}
 		else
 		{
-
-			// serialize the stored field data
-			$serialized_data = serialize( static::$field_data->attributes );
-
+			// otherwise, serialize the stored field data
+			$serialized_data = serialize( static::$field_data[$class_name]->attributes );
 		}
 
-		\Session::put( 'serialized_field_data[' .get_called_class(). ']', $serialized_data );
-
+		\Session::put( $session_name, $serialized_data );
 	}
 
 	/**
@@ -198,23 +192,22 @@ abstract class Base
 	 */
 	public static function unserialize_from_session()
 	{
+		$class_name   = get_called_class();
+		$session_name = 'serialized_field_data[' .$class_name. ']';
 
-		if( \Session::has( 'serialized_field_data[' .get_called_class(). ']' ))
+		if( \Session::has( $session_name ))
 		{
+			// there seems to be serialized data related to this class,
+			// let's load it up
+			$data = unserialize( \Session::get( $session_name ));
 
-			$data = unserialize( \Session::get( 'serialized_field_data[' .get_called_class(). ']' ));
-
-			static::$field_data = new \Laravel\Fluent( $data );
-
+			static::$field_data[$class_name] = new \Laravel\Fluent( $data );
 		}
 		else
 		{
-
 			// initialize static::$field_data
-			static::$field_data = new \Laravel\Fluent;
-
+			static::$field_data[$class_name] = new \Laravel\Fluent;
 		}
-
 	}
 
 	/**
@@ -237,52 +230,52 @@ abstract class Base
 	 */
 	public static function save_input( $fields = null, $input = null )
 	{
+		$class_name = get_called_class();
 
 		// $fields must be an array
 		if( !is_array( $fields ) && !is_null( $fields ))
+		{
 			return false;
+		}
 
 		// by default we save all fields
 		if( is_null( $fields ))
+		{
 			$fields = array_keys( \Input::all() );
+		}
 
 		// by default we save all input, this can be overridden by passing
 		// a second parameter to the save_input() method
 		if( is_null( $input ))
 		{
-
 			// create a fluent class containing the input data from a get/post
 			$input = new \Laravel\Fluent( \Input::all() );
-
 		}
 		else
 		{
-
 			// create a fluent class containing the input data from the method argument
 			$input = new \Laravel\Fluent( $input );
-
 		}
 
 		// when storing input it's important to load the persistent form
 		// data that may exist from previous requests, otherwise we will
 		// overwrite them
-		if( is_null( static::$field_data ))
+		if( !isset( static::$field_data[$class_name] ) || empty( static::$field_data[$class_name]->attributes ))
+		{
 			static::unserialize_from_session();
+		}
 
 		// ideally we'll have either a value for a field or an empty value
 		// for a field. this isn't strictly necessary and may change in the
 		// future given an appropriately convincing argument
 		foreach( $fields as $field_name )
 		{
-
 			// assign a value in the internal field_data store
-			static::set( $field_name, $input->$field_name );
-			
+			static::set( $field_name, $input->$field_name );	
 		}
 
 		// serialize the field data to session
 		static::serialize_to_session();
-
 	}
 
 	/**
@@ -292,10 +285,11 @@ abstract class Base
 	 */
 	public static function forget_input()
 	{
+		$class_name   = get_called_class();
+		$session_name = 'serialized_field_data[' .get_called_class(). ']';
 
 		// remove the persistent form data FOR-EV-ER, FOR-EV-ER, FOR..
-		\Session::forget( 'serialized_field_data[' .get_called_class(). ']' );
-
+		\Session::forget( $session_name );
 	}
 
 	/**
@@ -310,9 +304,9 @@ abstract class Base
 	 */
 	public static function has( $field_name )
 	{
+		$class_name = get_called_class();
 
-		return !is_null( static::$field_data ) && !is_null( static::$field_data->$field_name );
-
+		return isset( static::$field_data[$class_name] ) && static::$field_data[$class_name]->$field_name;
 	}
 
 	/**
@@ -331,13 +325,15 @@ abstract class Base
 	 */
 	public static function set( $key, $value )
 	{
+		$class_name = get_called_class();
 
 		// prevent need to manually load input when populating forms
-		if( is_null( static::$field_data ))
+		if( !isset( static::$field_data[$class_name] ) || empty( static::$field_data[$class_name]->attributes ))
+		{
 			static::unserialize_from_session();
+		}
 
-		return static::$field_data->$key = $value;
-
+		return static::$field_data[$class_name]->$key = $value;
 	}
 
 	/**
@@ -360,14 +356,16 @@ abstract class Base
 	 */
 	public static function load( $data )
 	{
+		$class_name = get_called_class();
 
 		static::$loaded = $data;
 
 		if( $data instanceof \Eloquent )
-			return static::$field_data = new \Laravel\Fluent( $data->attributes );
+		{
+			return static::$field_data[$class_name] = new \Laravel\Fluent( $data->attributes );
+		}
 
-		return static::$field_data = new \Laravel\Fluent( $data );
-
+		return static::$field_data[$class_name] = new \Laravel\Fluent( $data );
 	}
 
 	/**
@@ -379,9 +377,7 @@ abstract class Base
 	 */
 	public static function loaded()
 	{
-
 		return !is_null( static::$loaded );
-
 	}
 
 	/**
@@ -406,18 +402,19 @@ abstract class Base
 	 */
 	public static function get( $fields, $default = null )
 	{
+		$class_name = get_called_class();
 
 		// prevent need to manually load input when populating forms
 		// by unserializing here
-		if( is_null( static::$field_data ))
+		if( !isset( static::$field_data[$class_name] ) || empty( static::$field_data[$class_name]->attributes ))
+		{
 			static::unserialize_from_session();
+		}
 
 		// if we request a single field, deliver that
 		if( !is_array( $fields ))
 		{
-
-			return static::has( $fields ) ? static::$field_data->$fields : $default;
-
+			return static::has( $fields ) ? static::$field_data[$class_name]->$fields : $default;
 		}
 
 		// create an array that'll hold fields that we'll be returning
@@ -425,14 +422,13 @@ abstract class Base
 
 		foreach( $fields as $field )
 		{
-
 			if( static::has( $field ))
+			{
 				$return_fields[$field] = static::get( $field );
-
+			}
 		}
 
 		return $return_fields;
-
 	}
 
 	/**
@@ -444,12 +440,14 @@ abstract class Base
 	 */
 	public static function all()
 	{
+		$class_name = get_called_class();
 
-		if( is_null( static::$field_data ))
+		if( !isset( static::$field_data[$class_name] ) || empty( static::$field_data[$class_name]->attributes ))
+		{
 			static::unserialize_from_session();
+		}
 		
-		return static::$field_data->attributes;
-
+		return static::$field_data[$class_name]->attributes;
 	}
 
 	/**
@@ -470,30 +468,32 @@ abstract class Base
 	 */
 	public static function old( $fields, $default = null )
 	{
+		$class_name = get_called_class();
 
 		// prevent need to manually load input when populating forms
-		if( is_null( static::$field_data ))
+		if( !isset( static::$field_data[$class_name] ) || empty( static::$field_data[$class_name]->attributes ))
+		{
 			static::unserialize_from_session();
+		}
 
 		// return input flash data, fallback on persistent for data, fallback on default
 		$hierarchical_data = new \Laravel\Fluent( array_merge( static::all(), \Input::old() ));
 
 		// if we're not requesting multiple fields let's just return a scalar
 		if( !is_array( $fields ))
+		{
 			return !is_null( $hierarchical_data->$fields ) ? $hierarchical_data->$fields : $default;
+		}
 
 		// we're returning multiple fields so they'll need to be sent as an array
 		$return_fields = array();
 
 		foreach( $fields as $field )
 		{
-
-			$return_fields[$field] = !is_null( $hierarchical_data->$field ) ? $hierarchical_data->$field : $default;
-			
+			$return_fields[$field] = !is_null( $hierarchical_data->$field ) ? $hierarchical_data->$field : $default;	
 		}
 
 		return $return_fields;
-
 	}
 
 	/**
@@ -515,22 +515,24 @@ abstract class Base
 	 */
 	public static function old_checkbox( $field, $value, $default = false )
 	{
-
 		// return input flash data, fallback on persistent for data, fallback on default
 		$hierarchical_data = new \Laravel\Fluent( array_merge( static::all(), \Input::old() ));
 
 		if( $hierarchical_data->$field )
 		{
-
 			if( is_array( $hierarchical_data->$field ))
+			{
 				return in_array( $value, $hierarchical_data->$field ) ? true : $default;
+			}
 			else
+			{
 				return $hierarchical_data->$field == $value ? true : $default;
+			}
 
 		}
 		else
+		{
 			return $default;
-
+		}
 	}
-
 }

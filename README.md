@@ -234,9 +234,3 @@ When it's time to save the data from your form to your database just access the 
 
 		return Redirect::to_action( 'admin.programs@index' )->with( 'success', 'The program ' . $program->title . ' has been added.' );
 	}
-
-### Troubleshooting
-
-**Problems running on OSX**
-
-It's possible that some OSX users will have problems running Java through the webserver in the way that this bundle does. If you're having this problem check here for a potential solution: http://stackoverflow.com/questions/7650013/java-1-6-broken-when-called-by-background-symfony-task/9791946#9791946

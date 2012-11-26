@@ -4,7 +4,7 @@
  * form-base-model : A form base model for use with the Laravel PHP framework.
  *
  * @package  laravel-form-base-model
- * @version  1.3
+ * @version  1.5
  * @author   Shawn McCool <shawn@heybigname.com>
  * @link     https://github.com/shawnmccool/laravel-form-base-model
  */

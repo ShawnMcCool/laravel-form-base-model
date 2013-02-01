@@ -53,13 +53,6 @@ abstract class Base
 	public static $loaded = null;
 
 	/**
-	 * True if custom validators have been loaded.
-	 * 
-	 * @var object
-	 */
-	public static $custom_validators_loaded = null;
-
-	/**
 	 * This method can be overridden in order to add custom validators, generate
 	 * custom validation messages with expressions, or whatever.
 	 */
@@ -77,7 +70,6 @@ abstract class Base
 		static::$messages                 = array();
 		static::$validation               = false;
 		static::$loaded                   = null;
-		static::$custom_validators_loaded = null;
 	}
 
 	/**

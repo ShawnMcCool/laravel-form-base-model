@@ -42,7 +42,14 @@ abstract class Base
 	 *
 	 * @var object
 	 */
-	public static $validation = false;
+    public static $validation = false;
+
+    /**
+     * The registered custom validators.
+     *
+     * @var array
+     */
+    protected static $validators = array();
 
 	/**
 	 * If an array or object is loaded into the form model using the load() method
@@ -68,9 +75,22 @@ abstract class Base
 		static::$field_data               = array();
 		static::$rules                    = array();
 		static::$messages                 = array();
-		static::$validation               = false;
+        static::$validation               = false;
+        static::$validators               = array();
 		static::$loaded                   = null;
-	}
+    }
+
+    /**
+     * Registered a custom validator.
+     *
+     * @param string $name
+     * @param Closure $validator
+     * @return void
+     */
+    public static function register_validation($name, $validator)
+    {
+        static::$validators[$name] = $validator;
+    }
 
 	/**
 	 * Validates input data. Only fields present in the $fields array
@@ -147,7 +167,12 @@ abstract class Base
 		}
 
 		// generate the validator and return its success status
-		static::$validation = \Validator::make( $input, $field_rules, static::$messages );
+        static::$validation = \Validator::make( $input, $field_rules, static::$messages );
+
+        // register custom validators with the newly created validation
+        foreach (static::$validators as $name=>$validator) {
+            static::$validation->register($name, $validator);
+        }
 
 		return static::$validation->passes();
 	}

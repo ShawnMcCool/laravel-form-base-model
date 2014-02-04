@@ -42,7 +42,7 @@ class Test_Base extends \PHPUnit_Framework_TestCase
 		TestForm::$field_data               = true;
 		TestForm::$rules                    = true;
 		TestForm::$messages                 = true;
-		TestForm::$validation               = true;
+		TestForm::$formValidator               = true;
 		TestForm::$loaded                   = true;
 		TestForm::$custom_validators_loaded = true;
 
@@ -51,7 +51,7 @@ class Test_Base extends \PHPUnit_Framework_TestCase
 		$this->assertEquals( array(), TestForm::$field_data );
 		$this->assertEquals( array(), TestForm::$rules );
 		$this->assertEquals( array(), TestForm::$messages );
-		$this->assertEquals( false  , TestForm::$validation );
+		$this->assertEquals( false  , TestForm::$formValidator );
 		$this->assertEquals( null   , TestForm::$loaded );
 		$this->assertEquals( null   , TestForm::$custom_validators_loaded );
 	}

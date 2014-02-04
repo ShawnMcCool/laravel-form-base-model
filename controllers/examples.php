@@ -22,7 +22,7 @@ class Form_Base_Model_Examples_Controller extends Controller
 		// define which fields this request will validate and save
 		if( !ExampleForm::is_valid() )
 		{		
-			return Redirect::back()->with_input()->with_errors( ExampleForm::$validation );
+			return Redirect::back()->with_input()->with_errors( ExampleForm::$formValidator );
 		}
 
 		// save input to session
@@ -57,7 +57,7 @@ class Form_Base_Model_Examples_Controller extends Controller
 		// validate form and redirect with errors on failure
 		if( !ExampleForm::is_valid( $fields ))
 		{
-			return Redirect::back()->with_input()->with_errors( ExampleForm::$validation );
+			return Redirect::back()->with_input()->with_errors( ExampleForm::$formValidator );
 		}
 
 		// save input to session
@@ -78,7 +78,7 @@ class Form_Base_Model_Examples_Controller extends Controller
 
 		if( !ExampleForm::is_valid( $fields ))
 		{		
-			return Redirect::back()->with_input()->with_errors( ExampleForm::$validation );
+			return Redirect::back()->with_input()->with_errors( ExampleForm::$formValidator );
 		}
 
 		ExampleForm::save_input( $fields );

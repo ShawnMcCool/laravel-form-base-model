@@ -42,7 +42,14 @@ abstract class Base
 	 *
 	 * @var object
 	 */
-	public static $validation = false;
+    public static $formValidator = false;
+
+    /**
+     * The registered custom validators.
+     *
+     * @var array
+     */
+    protected static $customRegisteredValidators = array();
 
 	/**
 	 * If an array or object is loaded into the form model using the load() method
@@ -51,13 +58,6 @@ abstract class Base
 	 * @var object
 	 */
 	public static $loaded = null;
-
-	/**
-	 * True if custom validators have been loaded.
-	 * 
-	 * @var object
-	 */
-	public static $custom_validators_loaded = null;
 
 	/**
 	 * This method can be overridden in order to add custom validators, generate
@@ -75,13 +75,25 @@ abstract class Base
 		static::$field_data               = array();
 		static::$rules                    = array();
 		static::$messages                 = array();
-		static::$validation               = false;
+        static::$formValidator               = false;
+        static::$customRegisteredValidators               = array();
 		static::$loaded                   = null;
-		static::$custom_validators_loaded = null;
-	}
+    }
+
+    /**
+     * Registered a custom validator.
+     *
+     * @param string $name
+     * @param Closure $validator
+     * @return void
+     */
+    public static function register_validation($name, $validator)
+    {
+        static::$customRegisteredValidators[$name] = $validator;
+    }
 
 	/**
-	 * Validates input data. Only fields present in the $fields array
+	 * Validates input data. Only fields present in the $formFieldWhitelist array
 	 * will be validated. Rules must be defined in the form model's
 	 * static $rules array.
 	 *
@@ -95,69 +107,69 @@ abstract class Base
 	 *
 	 * Tested
 	 * 
-	 * @param  array   $fields
+	 * @param  array   $formFieldWhitelist
 	 * @param  array   $input
 	 * @return bool
 	 */
-	public static function is_valid( $fields = null, $input = null )
+	public static function is_valid( $formFieldWhitelist = null, $formInput = null )
 	{
 		// run before_validation hook
 		static::before_validation();
 
-		// $fields must be an array or null, a null value represents
-		// that all fields should be validated
-		if( !is_array( $fields ) && !is_null( $fields ))
+        // Reject invalidly formatted form field whitelists.
+		if( !is_array( $formFieldWhitelist ) && !is_null( $formFieldWhitelist ))
 		{
 			return false;
 		}
 
-		// if input is null then pull all input from the input class
-		if( is_null( $input ))
+        // When the form input isn't passed to this function it's retrieved from Laravel\Input::all().
+		if( is_null( $formInput ))
 		{
-			$input = \Input::all();
+			$formInput = \Input::all();
 		}
 
-		// if $fields is an array then we need to walk through the
-		// rules defined in the form model and pull out any that
-		// apply to the fields that were defined
-		if( is_array( $fields ))
+        // When a whitelist is provided, only use the rules for the given fields. 
+		if( is_array( $formFieldWhitelist ))
 		{
-			$field_rules = array();
+			$formFieldRules = array();
 
-			foreach( $fields as $field_name )
+			foreach( $formFieldWhitelist as $formFieldName )
 			{
-				if( array_key_exists( $field_name, static::$rules ))
+				if( array_key_exists( $formFieldName, static::$rules ))
 				{
-					$field_rules[$field_name] = static::$rules[$field_name];
+					$formFieldRules[$formFieldName] = static::$rules[$formFieldName];
 				}
 			}
 		}
+        // When a whitelist isn't provided use the default set of rules.
 		else
 		{
-			// if $fields isn't an array then apply all rules
-			$field_rules = static::$rules;
+			$formFieldRules = static::$rules;
 		}
 
-		// if no rules apply to the fields that we're validating then
-		// validation passes
-		if( empty( $field_rules ))
+        // When no rules are provided, all input is considered valid.
+		if( empty( $formFieldRules ))
 		{
 			return true;
 		}
 
-		// remove empty rules
-		foreach( $field_rules as $field => $rules )
+		// Remove form fields from the validation list if they don't have rules. 
+		foreach( $formFieldRules as $field => $rules )
 		{
 			if( empty( $rules ))
 			{
-				unset( $field_rules[$field] );
+				unset( $formFieldRules[$field] );
 			}
 		}
 
-		// generate the validator and return its success status
-		static::$validation = \Validator::make( $input, $field_rules, static::$messages );
+        static::$formValidator = \Validator::make( $formInput, $formFieldRules, static::$messages );
 
-		return static::$validation->passes();
+        // register custom validators with the newly created form validator
+        foreach (static::$customRegisteredValidators as $name=>$validator) {
+            static::$formValidator->register($name, $validator);
+        }
+
+		return static::$formValidator->passes();
 	}
 
 	/**
@@ -212,10 +224,10 @@ abstract class Base
 
 	/**
 	 * Saves input from the $input parameter (array) into the form model's
-	 * field_data array if the key is present in the $fields array then
+	 * field_data array if the key is present in the $formFieldWhitelist array then
 	 * serializes the field_data array to the session.
 	 *
-	 * The $fields array is a simple array. Only the fields declared in
+	 * The $formFieldWhitelist array is a simple array. Only the fields declared in
 	 * the $field array will be stored.
 	 *
 	 * <code>
@@ -225,23 +237,23 @@ abstract class Base
 	 * 
 	 * Tested
 	 * 
-	 * @param  array   $fields
+	 * @param  array   $formFieldWhitelist
 	 * @param  array   $input
 	 */
-	public static function save_input( $fields = null, $input = null )
+	public static function save_input( $formFieldWhitelist = null, $input = null )
 	{
 		$class_name = get_called_class();
 
-		// $fields must be an array
-		if( !is_array( $fields ) && !is_null( $fields ))
+		// $formFieldWhitelist must be an array
+		if( !is_array( $formFieldWhitelist ) && !is_null( $formFieldWhitelist ))
 		{
 			return false;
 		}
 
 		// by default we save all fields
-		if( is_null( $fields ))
+		if( is_null( $formFieldWhitelist ))
 		{
-			$fields = array_keys( \Input::all() );
+			$formFieldWhitelist = array_keys( \Input::all() );
 		}
 
 		// by default we save all input, this can be overridden by passing
@@ -268,10 +280,10 @@ abstract class Base
 		// ideally we'll have either a value for a field or an empty value
 		// for a field. this isn't strictly necessary and may change in the
 		// future given an appropriately convincing argument
-		foreach( $fields as $field_name )
+		foreach( $formFieldWhitelist as $formFieldName )
 		{
 			// assign a value in the internal field_data store
-			static::set( $field_name, $input->$field_name );	
+			static::set( $formFieldName, $input->$formFieldName );	
 		}
 
 		// serialize the field data to session
@@ -285,7 +297,6 @@ abstract class Base
 	 */
 	public static function forget_input()
 	{
-		$class_name   = get_called_class();
 		$session_name = 'serialized_field_data[' .get_called_class(). ']';
 
 		// remove the persistent form data FOR-EV-ER, FOR-EV-ER, FOR..
@@ -299,14 +310,14 @@ abstract class Base
 	 *
 	 * Tested
 	 * 
-	 * @param  string  $field_name
+	 * @param  string  $formFieldName
 	 * @return bool
 	 */
-	public static function has( $field_name )
+	public static function has( $formFieldName )
 	{
 		$class_name = get_called_class();
 
-		return isset( static::$field_data[$class_name] ) && static::$field_data[$class_name]->$field_name;
+		return isset( static::$field_data[$class_name] ) && static::$field_data[$class_name]->$formFieldName;
 	}
 
 	/**
@@ -400,7 +411,7 @@ abstract class Base
 	 * @param  mixed   $default
 	 * @return mixed
 	 */
-	public static function get( $fields, $default = null )
+	public static function get( $formFieldWhitelist, $default = null )
 	{
 		$class_name = get_called_class();
 
@@ -412,15 +423,15 @@ abstract class Base
 		}
 
 		// if we request a single field, deliver that
-		if( !is_array( $fields ))
+		if( !is_array( $formFieldWhitelist ))
 		{
-			return static::has( $fields ) ? static::$field_data[$class_name]->$fields : $default;
+			return static::has( $formFieldWhitelist ) ? static::$field_data[$class_name]->$fields : $default;
 		}
 
 		// create an array that'll hold fields that we'll be returning
 		$return_fields = array();
 
-		foreach( $fields as $field )
+		foreach( $formFieldWhitelist as $field )
 		{
 			if( static::has( $field ))
 			{
@@ -466,7 +477,7 @@ abstract class Base
 	 * @param  mixed   $default
 	 * @return mixed
 	 */
-	public static function old( $fields, $default = null )
+	public static function old( $formFieldWhitelist, $default = null )
 	{
 		$class_name = get_called_class();
 
@@ -480,7 +491,7 @@ abstract class Base
 		$hierarchical_data = new \Laravel\Fluent( array_merge( static::all(), \Input::old() ));
 
 		// if we're not requesting multiple fields let's just return a scalar
-		if( !is_array( $fields ))
+		if( !is_array( $formFieldWhitelist ))
 		{
 			return !is_null( $hierarchical_data->$fields ) ? $hierarchical_data->$fields : $default;
 		}
@@ -488,7 +499,7 @@ abstract class Base
 		// we're returning multiple fields so they'll need to be sent as an array
 		$return_fields = array();
 
-		foreach( $fields as $field )
+		foreach( $formFieldWhitelist as $field )
 		{
 			$return_fields[$field] = !is_null( $hierarchical_data->$field ) ? $hierarchical_data->$field : $default;	
 		}
